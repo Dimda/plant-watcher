@@ -11,11 +11,15 @@ int moistureLevel2 = 0;
 
 int moistureSensor1 = A0;
 int moistureSensor2 = A1;
+int waterPump = D0;
 
 void setup()   {
-  //Initialize moisture sensor
+  //Initialize pins
   pinMode(moistureSensor1, INPUT);
   pinMode(moistureSensor2, INPUT);
+  pinMode(waterPump, OUTPUT);
+
+  //Initialize cloud variables
   Particle.variable("moistureLvl1", moistureLevel1);
   Particle.variable("moistureLvl2", moistureLevel2);
 
@@ -27,7 +31,7 @@ void loop() {
   moistureLevel1 = analogRead(moistureSensor1);
   moistureLevel2 = analogRead(moistureSensor2);
   displayMoisture(moistureLevel1, moistureLevel2);
-
+  controlWaterPump(moistureLevel1, moistureLevel2);
   delay(2000);
 }
 
@@ -41,4 +45,13 @@ void displayMoisture(int moistureLevel1, int moistureLevel2) {
   display.println("M2:");
   display.println(moistureLevel2);
   display.display();
+}
+
+void controlWaterPump(int moistureLevel1, int moistureLevel2) {
+  int averageMoistureLevel = (moistureLevel1 + moistureLevel2)/2;
+  if (averageMoistureLevel < 200) {
+    digitalWrite(waterPump, HIGH);
+  } else {
+    digitalWrite(waterPump, LOW);
+  }
 }
