@@ -32,18 +32,45 @@ void loop() {
   moistureLevel2 = analogRead(moistureSensor2);
   displayMoisture(moistureLevel1, moistureLevel2);
   controlWaterPump(moistureLevel1, moistureLevel2);
-  delay(2000);
+  delay(500);
+}
+
+void drawBar(String position, int moistureLevel) {
+  int leftPadding;
+  if (position == "left") {
+    leftPadding = 8;
+  } else {
+    leftPadding = 72;
+  }
+
+  float moistureRatio;
+  if (moistureLevel > 1000) {
+    moistureRatio = 1.0;
+  } else {
+    moistureRatio = moistureLevel / 1000.0f;
+  }
+
+  int defaultTopPadding = 10;
+  int defaultBarLength = display.height() - defaultTopPadding;
+  int topPadding = defaultTopPadding + ((1 - moistureRatio) * defaultBarLength);
+  int barLength = display.height() - topPadding;
+  int barWidth = 48;
+
+  display.drawRect(leftPadding, defaultTopPadding, barWidth, display.height() - defaultTopPadding, WHITE);
+  display.fillRect(leftPadding, topPadding, barWidth, barLength, WHITE);
+
 }
 
 void displayMoisture(int moistureLevel1, int moistureLevel2) {
   display.clearDisplay();
-  display.setTextSize(2);
-  display.setTextColor(WHITE);
-  display.setCursor(0,0);
-  display.println("M1:");
-  display.println(moistureLevel1);
-  display.println("M2:");
-  display.println(moistureLevel2);
+  display.drawLine(display.width() / 2, 0, display.width() / 2, display.height(), WHITE);
+  display.drawChar(25, 0, 'M', WHITE, BLACK, 1);
+  display.drawChar(34, 0, '1', WHITE, BLACK, 1);
+  display.drawChar(89, 0, 'M', WHITE, BLACK, 1);
+  display.drawChar(98, 0, '2', WHITE, BLACK, 1);
+
+  drawBar("left", moistureLevel1);
+  drawBar("right", moistureLevel2);
   display.display();
 }
 
