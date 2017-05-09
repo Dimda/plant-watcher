@@ -13,7 +13,11 @@ int moistureSensor1 = A0;
 int moistureSensor2 = A1;
 int waterPump = D0;
 
-void setup()   {
+float maxMoisture = 1000.0f;
+
+int setMode(String mode);
+
+void setup() {
   //Initialize pins
   pinMode(moistureSensor1, INPUT);
   pinMode(moistureSensor2, INPUT);
@@ -25,6 +29,9 @@ void setup()   {
 
   //Initialize display
   display.begin(SSD1306_SWITCHCAPVCC);
+
+  //Initialize cloud functions
+  Particle.function("setMode", setMode);
 }
 
 void loop() {
@@ -33,6 +40,20 @@ void loop() {
   displayMoisture(moistureLevel1, moistureLevel2);
   controlWaterPump(moistureLevel1, moistureLevel2);
   delay(500);
+}
+
+int setMode(String mode) {
+  switch (mode.toInt()) {
+    case 0:
+      maxMoisture = 1000.0f;
+      break;
+    case 1:
+      maxMoisture = 500.0f;
+      break;
+    case 2:
+      maxMoisture = 300.0f;
+      break;
+  }
 }
 
 void drawBar(String position, int moistureLevel) {
@@ -44,10 +65,10 @@ void drawBar(String position, int moistureLevel) {
   }
 
   float moistureRatio;
-  if (moistureLevel > 1000) {
+  if (moistureLevel > maxMoisture) {
     moistureRatio = 1.0;
   } else {
-    moistureRatio = moistureLevel / 1000.0f;
+    moistureRatio = moistureLevel / maxMoisture;
   }
 
   int defaultTopPadding = 10;
@@ -57,13 +78,15 @@ void drawBar(String position, int moistureLevel) {
   int barWidth = 48;
 
   display.drawRect(leftPadding, defaultTopPadding, barWidth, display.height() - defaultTopPadding, WHITE);
-  display.fillRect(leftPadding, topPadding, barWidth, barLength, WHITE);
 
+  int barMiddle = ((display.height() - defaultTopPadding) / 2) + defaultTopPadding;
+  display.drawLine(leftPadding, barMiddle,  leftPadding + barWidth, barMiddle, WHITE);
+
+  display.fillRect(leftPadding, topPadding, barWidth, barLength, WHITE);
 }
 
 void displayMoisture(int moistureLevel1, int moistureLevel2) {
   display.clearDisplay();
-  display.drawLine(display.width() / 2, 0, display.width() / 2, display.height(), WHITE);
   display.drawChar(25, 0, 'M', WHITE, BLACK, 1);
   display.drawChar(34, 0, '1', WHITE, BLACK, 1);
   display.drawChar(89, 0, 'M', WHITE, BLACK, 1);
@@ -76,7 +99,7 @@ void displayMoisture(int moistureLevel1, int moistureLevel2) {
 
 void controlWaterPump(int moistureLevel1, int moistureLevel2) {
   int averageMoistureLevel = (moistureLevel1 + moistureLevel2)/2;
-  if (averageMoistureLevel < 200) {
+  if (averageMoistureLevel < (maxMoisture / 2)) {
     digitalWrite(waterPump, HIGH);
   } else {
     digitalWrite(waterPump, LOW);
