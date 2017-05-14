@@ -13,7 +13,7 @@ const int moistureSensor1 = A0;
 const int moistureSensor2 = A1;
 const int waterPump = D0;
 
-float maxMoisture = 1000.0f;
+float maxMoisture = 3000.0f;
 
 int setMode(String mode);
 
@@ -45,13 +45,13 @@ void loop() {
 int setMode(String mode) {
   switch (mode.toInt()) {
     case 0:
-      maxMoisture = 1000.0f;
+      maxMoisture = 3000.0f;
       break;
     case 1:
-      maxMoisture = 500.0f;
+      maxMoisture = 2000.0f;
       break;
     case 2:
-      maxMoisture = 300.0f;
+      maxMoisture = 1000.0f;
       break;
   }
 }
