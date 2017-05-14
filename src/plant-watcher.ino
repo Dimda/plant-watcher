@@ -101,7 +101,8 @@ void controlWaterPump(int moistureLevel1, int moistureLevel2) {
   int averageMoistureLevel = (moistureLevel1 + moistureLevel2)/2;
   if (averageMoistureLevel < (maxMoisture / 2)) {
     digitalWrite(waterPump, HIGH);
-  } else {
+    delay(1000);
     digitalWrite(waterPump, LOW);
+    delay(3000);
   }
 }
