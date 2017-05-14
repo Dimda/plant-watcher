@@ -9,9 +9,9 @@ Adafruit_SSD1306 display(OLED_DC, OLED_RESET, OLED_CS);
 int moistureLevel1 = 0;
 int moistureLevel2 = 0;
 
-int moistureSensor1 = A0;
-int moistureSensor2 = A1;
-int waterPump = D0;
+const int moistureSensor1 = A0;
+const int moistureSensor2 = A1;
+const int waterPump = D0;
 
 float maxMoisture = 1000.0f;
 
