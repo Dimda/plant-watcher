@@ -32,7 +32,10 @@ void setup() {
 
 void loop() {
   moistureLevel = analogRead(moistureSensor);
+  display.clearDisplay();
+  drawGrid();
   displayMoisture(moistureLevel);
+  display.display();
   controlWaterPump(moistureLevel);
   delay(1000);
 }
@@ -49,6 +52,11 @@ int setMode(String mode) {
       maxMoisture = 1000.0f;
       break;
   }
+}
+
+void drawGrid() {
+  display.drawLine(display.width() / 2, 0, display.width() / 2, display.height(), WHITE);
+  display.drawLine(display.width()/2, display.height()/2, display.width(), display.height()/2, WHITE);
 }
 
 void drawBar(int moistureLevel) {
@@ -76,7 +84,6 @@ void drawBar(int moistureLevel) {
 }
 
 void displayMoisture(int moistureLevel) {
-  display.clearDisplay();
   display.drawChar(5, 0, 'M', WHITE, BLACK, 1);
   display.drawChar(15, 0, 'O', WHITE, BLACK, 1);
   display.drawChar(25, 0, 'I', WHITE, BLACK, 1);
@@ -84,7 +91,6 @@ void displayMoisture(int moistureLevel) {
   display.drawChar(45, 0, 'T', WHITE, BLACK, 1);
 
   drawBar(moistureLevel);
-  display.display();
 }
 
 void controlWaterPump(int moistureLevel) {
