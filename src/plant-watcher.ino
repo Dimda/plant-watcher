@@ -6,26 +6,22 @@
 #define OLED_RESET  D5
 Adafruit_SSD1306 display(OLED_DC, OLED_RESET, OLED_CS);
 
-int moistureLevel1 = 0;
-int moistureLevel2 = 0;
+int moistureLevel = 0;
 
-const int moistureSensor1 = A0;
-const int moistureSensor2 = A1;
+const int moistureSensor = A0;
 const int waterPump = D0;
 
-float maxMoisture = 3000.0f;
+float maxMoisture = 1800.0f;
 
 int setMode(String mode);
 
 void setup() {
   //Initialize pins
-  pinMode(moistureSensor1, INPUT);
-  pinMode(moistureSensor2, INPUT);
+  pinMode(moistureSensor, INPUT);
   pinMode(waterPump, OUTPUT);
 
   //Initialize cloud variables
-  Particle.variable("moistureLvl1", moistureLevel1);
-  Particle.variable("moistureLvl2", moistureLevel2);
+  Particle.variable("moistureLvl", moistureLevel);
 
   //Initialize display
   display.begin(SSD1306_SWITCHCAPVCC);
@@ -35,11 +31,10 @@ void setup() {
 }
 
 void loop() {
-  moistureLevel1 = analogRead(moistureSensor1);
-  moistureLevel2 = analogRead(moistureSensor2);
-  displayMoisture(moistureLevel1, moistureLevel2);
-  controlWaterPump(moistureLevel1, moistureLevel2);
-  delay(500);
+  moistureLevel = analogRead(moistureSensor);
+  displayMoisture(moistureLevel);
+  controlWaterPump(moistureLevel);
+  delay(1000);
 }
 
 int setMode(String mode) {
@@ -56,15 +51,10 @@ int setMode(String mode) {
   }
 }
 
-void drawBar(String position, int moistureLevel) {
-  int leftPadding;
-  if (position == "left") {
-    leftPadding = 8;
-  } else {
-    leftPadding = 72;
-  }
-
+void drawBar(int moistureLevel) {
+  int leftPadding = 3;
   float moistureRatio;
+
   if (moistureLevel > maxMoisture) {
     moistureRatio = 1.0;
   } else {
@@ -80,26 +70,25 @@ void drawBar(String position, int moistureLevel) {
   display.drawRect(leftPadding, defaultTopPadding, barWidth, display.height() - defaultTopPadding, WHITE);
 
   int barMiddle = ((display.height() - defaultTopPadding) / 2) + defaultTopPadding;
-  display.drawLine(leftPadding, barMiddle,  leftPadding + barWidth, barMiddle, WHITE);
+  display.drawLine(leftPadding, barMiddle, leftPadding + barWidth, barMiddle, WHITE);
 
   display.fillRect(leftPadding, topPadding, barWidth, barLength, WHITE);
 }
 
-void displayMoisture(int moistureLevel1, int moistureLevel2) {
+void displayMoisture(int moistureLevel) {
   display.clearDisplay();
-  display.drawChar(25, 0, 'M', WHITE, BLACK, 1);
-  display.drawChar(34, 0, '1', WHITE, BLACK, 1);
-  display.drawChar(89, 0, 'M', WHITE, BLACK, 1);
-  display.drawChar(98, 0, '2', WHITE, BLACK, 1);
+  display.drawChar(5, 0, 'M', WHITE, BLACK, 1);
+  display.drawChar(15, 0, 'O', WHITE, BLACK, 1);
+  display.drawChar(25, 0, 'I', WHITE, BLACK, 1);
+  display.drawChar(35, 0, 'S', WHITE, BLACK, 1);
+  display.drawChar(45, 0, 'T', WHITE, BLACK, 1);
 
-  drawBar("left", moistureLevel1);
-  drawBar("right", moistureLevel2);
+  drawBar(moistureLevel);
   display.display();
 }
 
-void controlWaterPump(int moistureLevel1, int moistureLevel2) {
-  int averageMoistureLevel = (moistureLevel1 + moistureLevel2)/2;
-  if (averageMoistureLevel < (maxMoisture / 2)) {
+void controlWaterPump(int moistureLevel) {
+  if (moistureLevel < (maxMoisture / 2)) {
     digitalWrite(waterPump, HIGH);
     delay(1000);
     digitalWrite(waterPump, LOW);
