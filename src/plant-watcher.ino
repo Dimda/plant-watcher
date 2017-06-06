@@ -7,9 +7,12 @@
 Adafruit_SSD1306 display(OLED_DC, OLED_RESET, OLED_CS);
 
 int moistureLevel = 0;
+long timeout = 1800000; //Time interval (miliseconds) between moisture check
+volatile unsigned long lastMicros;
 
 const int moistureSensor = A0;
-const int waterPump = D0;
+const int moistureSensorCurrent = D2;
+const int waterPump = D6;
 
 float maxMoisture = 1800.0f;
 
@@ -18,6 +21,7 @@ int setMode(String mode);
 void setup() {
   //Initialize pins
   pinMode(moistureSensor, INPUT);
+  pinMode(moistureSensorCurrent, OUTPUT);
   pinMode(waterPump, OUTPUT);
 
   //Initialize cloud variables
@@ -31,12 +35,19 @@ void setup() {
 }
 
 void loop() {
-  moistureLevel = analogRead(moistureSensor);
+  if((long)(micros() - lastMicros) >= timeout * 1000) {
+    lastMicros = micros();
+    readMoisture();
+    if (moistureLevel < (maxMoisture / 2)) {
+      digitalWrite(waterPump, HIGH);
+      delay(2000);
+      digitalWrite(waterPump, LOW);
+    }
+  }
   display.clearDisplay();
   drawGrid();
   displayMoisture(moistureLevel);
   display.display();
-  controlWaterPump(moistureLevel);
   delay(1000);
 }
 
@@ -93,11 +104,9 @@ void displayMoisture(int moistureLevel) {
   drawBar(moistureLevel);
 }
 
-void controlWaterPump(int moistureLevel) {
-  if (moistureLevel < (maxMoisture / 2)) {
-    digitalWrite(waterPump, HIGH);
-    delay(1000);
-    digitalWrite(waterPump, LOW);
-    delay(3000);
-  }
+void readMoisture() {
+  digitalWrite(moistureSensorCurrent, HIGH);
+  delay(100);
+  moistureLevel = analogRead(moistureSensor);
+  digitalWrite(moistureSensorCurrent, LOW);
 }
