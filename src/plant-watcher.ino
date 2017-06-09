@@ -1,10 +1,12 @@
 #include "Adafruit_SSD1306.h"
+#include "Adafruit_BMP085.h"
 
 //Display settings
 #define OLED_DC     D3
 #define OLED_CS     D4
 #define OLED_RESET  D5
 Adafruit_SSD1306 display(OLED_DC, OLED_RESET, OLED_CS);
+Adafruit_BMP085 bmp;
 
 int moistureLevel = 0;
 long timeout = 1800000; //Time interval (miliseconds) between moisture check
@@ -19,6 +21,11 @@ float maxMoisture = 1800.0f;
 int setMode(String mode);
 
 void setup() {
+  Serial.begin(9600);
+  if (!bmp.begin()) {
+    Serial.println("Could not find a valid BMP085 sensor, check wiring!");
+    while (1) {}
+  }
   //Initialize pins
   pinMode(moistureSensor, INPUT);
   pinMode(moistureSensorCurrent, OUTPUT);
@@ -47,6 +54,7 @@ void loop() {
   display.clearDisplay();
   drawGrid();
   displayMoisture(moistureLevel);
+  displayTemperature(String(bmp.readTemperature()));
   display.display();
   delay(1000);
 }
@@ -102,6 +110,21 @@ void displayMoisture(int moistureLevel) {
   display.drawChar(45, 0, 'T', WHITE, BLACK, 1);
 
   drawBar(moistureLevel);
+}
+
+void displayTemperature(String temperature) {
+  display.drawChar(75, 0, 'T', WHITE, BLACK, 1);
+  display.drawChar(85, 0, 'E', WHITE, BLACK, 1);
+  display.drawChar(95, 0, 'M', WHITE, BLACK, 1);
+  display.drawChar(105, 0, 'P', WHITE, BLACK, 1);
+
+  char temperatureChars[3];
+  temperature.toCharArray(temperatureChars, 3);
+
+  display.drawChar(75, 10, temperatureChars[0], WHITE, BLACK, 2);
+  display.drawChar(88, 10, temperatureChars[1], WHITE, BLACK, 2);
+  display.drawCircle(102, 12, 2, WHITE);
+  display.drawChar(107, 10, 'C', WHITE, BLACK, 2);
 }
 
 void readMoisture() {
