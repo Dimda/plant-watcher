@@ -15,6 +15,7 @@ volatile unsigned long lastMicros;
 const int moistureSensor = A0;
 const int moistureSensorCurrent = D2;
 const int waterPump = D6;
+const int photoresistor = A1;
 
 float maxMoisture = 1800.0f;
 
@@ -30,6 +31,7 @@ void setup() {
   pinMode(moistureSensor, INPUT);
   pinMode(moistureSensorCurrent, OUTPUT);
   pinMode(waterPump, OUTPUT);
+  pinMode(photoresistor, INPUT);
 
   //Initialize cloud variables
   Particle.variable("moistureLvl", moistureLevel);
@@ -55,6 +57,7 @@ void loop() {
   drawGrid();
   displayMoisture(moistureLevel);
   displayTemperature(String(bmp.readTemperature()));
+  displayLight(analogRead(photoresistor));
   display.display();
   delay(1000);
 }
@@ -125,6 +128,27 @@ void displayTemperature(String temperature) {
   display.drawChar(88, 10, temperatureChars[1], WHITE, BLACK, 2);
   display.drawCircle(102, 12, 2, WHITE);
   display.drawChar(107, 10, 'C', WHITE, BLACK, 2);
+}
+
+void drawSunIcon() {
+  display.drawCircle(80, 52, 5, WHITE);
+}
+
+void displayLight(int lightLevel) {
+  display.drawChar(75, 34, 'L', WHITE, BLACK, 1);
+  display.drawChar(85, 34, 'I', WHITE, BLACK, 1);
+  display.drawChar(95, 34, 'G', WHITE, BLACK, 1);
+  display.drawChar(105, 34, 'H', WHITE, BLACK, 1);
+  display.drawChar(115, 34, 'T', WHITE, BLACK, 1);
+  if (lightLevel < 5) {
+    Serial.println("OOO");
+  } else if (lightLevel < 15) {
+    Serial.println("OO");
+  } else if (lightLevel < 25) {
+    Serial.println("O");
+  }
+  drawSunIcon();
+  //Serial.println(lightLevel);
 }
 
 void readMoisture() {
