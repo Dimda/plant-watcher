@@ -21,6 +21,7 @@ float maxMoisture = 1800.0f;
 int setMode(String mode);
 
 void setup() {
+  Serial.begin(9600);
   if (!bmp.begin()) {
     Serial.println("Could not find a valid BMP085 sensor, check wiring!");
     while (1) {}
