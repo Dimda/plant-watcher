@@ -1,14 +1,14 @@
 #include "Adafruit_SSD1306_RK.h"
-#include "Adafruit_BMP085.h"
 #include "Moisture.h"
+#include "Temperature.h"
 
 //Display settings
 #define OLED_DC     D3
 #define OLED_CS     D4
 #define OLED_RESET  D5
 Adafruit_SSD1306 display(OLED_DC, OLED_RESET, OLED_CS);
-Adafruit_BMP085 bmp;
 Moisture moisture(A0, D2);
+Temperature temperature;
 
 long timeout = 1800000; //Time interval (miliseconds) between moisture check
 volatile unsigned long lastMicros;
@@ -16,14 +16,8 @@ volatile unsigned long lastMicros;
 const int waterPump = D6;
 const int photoresistor = A1;
 
-/*int setMode(String mode);*/
-
 void setup() {
   Serial.begin(9600);
-  if (!bmp.begin()) {
-    Serial.println("Could not find a valid BMP085 sensor, check wiring!");
-    while (1) {}
-  }
   pinMode(waterPump, OUTPUT);
   pinMode(photoresistor, INPUT);
 
@@ -43,7 +37,7 @@ void loop() {
   display.clearDisplay();
   drawGrid();
   moisture.display(&display);
-  displayTemperature(String(bmp.readTemperature()));
+  temperature.display(&display);
   displayLight(analogRead(photoresistor));
   display.display();
   delay(1000);
@@ -52,21 +46,6 @@ void loop() {
 void drawGrid() {
   display.drawLine(display.width() / 2, 0, display.width() / 2, display.height(), WHITE);
   display.drawLine(display.width()/2, display.height()/2, display.width(), display.height()/2, WHITE);
-}
-
-void displayTemperature(String temperature) {
-  display.drawChar(75, 0, 'T', WHITE, BLACK, 1);
-  display.drawChar(85, 0, 'E', WHITE, BLACK, 1);
-  display.drawChar(95, 0, 'M', WHITE, BLACK, 1);
-  display.drawChar(105, 0, 'P', WHITE, BLACK, 1);
-
-  char temperatureChars[3];
-  temperature.toCharArray(temperatureChars, 3);
-
-  display.drawChar(75, 10, temperatureChars[0], WHITE, BLACK, 2);
-  display.drawChar(88, 10, temperatureChars[1], WHITE, BLACK, 2);
-  display.drawCircle(102, 12, 2, WHITE);
-  display.drawChar(107, 10, 'C', WHITE, BLACK, 2);
 }
 
 void drawSunIcon(int x, int y, int radius) {
