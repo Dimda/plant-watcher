@@ -5,6 +5,11 @@
 class Temperature
 {
   public:
+    Temperature(int sensorPin);
     void display(Adafruit_SSD1306* display);
+    void read();
+  private:
+    int _sensorPin;
+    int _temperature;
 };
 #endif

@@ -10,8 +10,8 @@
 Adafruit_SSD1306 display(OLED_DC, OLED_RESET, OLED_CS);
 
 //Initializing objects
-Moisture moisture(A0, D2);
-Temperature temperature;
+Moisture moisture(A2, D2);
+Temperature temperature(A0);
 Light light(A1);
 
 long timeout = 1800000; //Time interval (miliseconds) between moisture check
@@ -38,6 +38,7 @@ void loop() {
   display.clearDisplay();
   drawGrid();
   moisture.display(&display);
+  temperature.read();
   temperature.display(&display);
   light.read();
   light.display(&display);

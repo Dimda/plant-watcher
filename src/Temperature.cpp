@@ -1,21 +1,24 @@
 #include "Temperature.h"
-#include "Adafruit_BMP085.h"
 
-Adafruit_BMP085 bmp;
+Temperature::Temperature(int sensorPin)
+{
+  pinMode(sensorPin, INPUT);
+  _sensorPin = sensorPin;
+  _temperature = 0;
+}
+
+void Temperature::read() {
+  _temperature = ((analogRead(_sensorPin) * 3.3)/4095) * 100;
+}
 
 void Temperature::display(Adafruit_SSD1306* display) {
-  if (!bmp.begin()) {
-    Serial.println("Could not find a valid BMP085 sensor, check wiring!");
-    while (1) {}
-  }
-
   display->drawChar(75, 0, 'T', WHITE, BLACK, 1);
   display->drawChar(85, 0, 'E', WHITE, BLACK, 1);
   display->drawChar(95, 0, 'M', WHITE, BLACK, 1);
   display->drawChar(105, 0, 'P', WHITE, BLACK, 1);
 
   char temperatureChars[3];
-  String temp = String(bmp.readTemperature());
+  String temp = String(_temperature);
   temp.toCharArray(temperatureChars, 3);
 
   display->drawChar(75, 10, temperatureChars[0], WHITE, BLACK, 2);
