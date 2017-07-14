@@ -14,20 +14,26 @@ Moisture moisture(A2, D2);
 Temperature temperature(A0);
 Light light(A1);
 
-long timeout = 1800000; //Time interval (miliseconds) between moisture check
-volatile unsigned long lastMicros;
+const int wateringTimeout = 1800000; //Time interval (miliseconds) between moisture check
+volatile unsigned long lastTimeWatered;
+const int debouncingTime = 300;// Debouncing time (miliseconds) for button clicks
+volatile unsigned long lastTimeClicked;
 const int waterPump = D6;
+const int button = D1;
+bool useDisplay = true;
 
 void setup() {
   Serial.begin(9600);
   pinMode(waterPump, OUTPUT);
+  pinMode(button, INPUT_PULLUP);
+  attachInterrupt(button, toggleDisplay, CHANGE);
 
   display.begin(SSD1306_SWITCHCAPVCC);
 }
 
 void loop() {
-  if((long)(micros() - lastMicros) >= timeout * 1000) {
-    lastMicros = micros();
+  if((long)(micros() - lastTimeWatered) >= wateringTimeout * 1000) {
+    lastTimeWatered = micros();
     moisture.read();
     if (moisture.get() < (moisture.getMax() / 2)) {
       digitalWrite(waterPump, HIGH);
@@ -36,12 +42,14 @@ void loop() {
     }
   }
   display.clearDisplay();
-  drawGrid();
-  moisture.display(&display);
-  temperature.read();
-  temperature.display(&display);
-  light.read();
-  light.display(&display);
+  if (useDisplay == true) {
+    drawGrid();
+    moisture.display(&display);
+    temperature.read();
+    temperature.display(&display);
+    light.read();
+    light.display(&display);
+  }
   display.display();
   delay(1000);
 }
@@ -49,4 +57,11 @@ void loop() {
 void drawGrid() {
   display.drawLine(display.width() / 2, 0, display.width() / 2, display.height(), WHITE);
   display.drawLine(display.width()/2, display.height()/2, display.width(), display.height()/2, WHITE);
+}
+
+void toggleDisplay() {
+  if ((long)(micros() - lastTimeClicked) >= debouncingTime * 1000) {
+    useDisplay = !useDisplay;
+    lastTimeClicked = micros();
+  }
 }
